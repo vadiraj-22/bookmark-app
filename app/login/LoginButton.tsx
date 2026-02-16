@@ -1,17 +1,26 @@
 'use client'
 
 import { createClient } from '@/lib/supabaseClient'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 export default function LoginButton() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const errorMsg = searchParams.get('error')
+    if (errorMsg) {
+      setError(decodeURIComponent(errorMsg))
+    }
+  }, [searchParams])
 
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true)
       setError(null)
-      
+
       const supabase = createClient()
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

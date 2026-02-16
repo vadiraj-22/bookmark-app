@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import LoginButton from './LoginButton'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: 'Login - LinkLedger',
@@ -23,7 +24,9 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <LoginButton />
+        <Suspense fallback={<div className="h-12 w-full bg-gray-100 rounded-xl animate-pulse" />}>
+          <LoginButton />
+        </Suspense>
 
         <p className="text-xs text-gray-500 text-center mt-6 leading-relaxed">
           By signing in, you agree to our Terms of Service and Privacy Policy
