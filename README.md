@@ -1,85 +1,75 @@
-# Smart Bookmark Web App
+# LinkLedger - Intelligent Bookmark Manager
 
-A production-ready bookmark manager with Google OAuth authentication and real-time synchronization across browser tabs. Built with modern web technologies and best practices.
+![LinkLedger Hero](https://via.placeholder.com/1200x600/0f172a/ffffff?text=LinkLedger+Dashboard)
+
+**LinkLedger** is a modern, production-ready bookmark manager designed to organize your digital life. Built with **Next.js 14**, **Supabase**, and **Tailwind CSS**, it features secure Google OAuth authentication, real-time synchronization across devices, and a beautiful, responsive interface.
+
+Stop drowning in tabs. Save, organize, and access your favorite links from anywhere.
+
+## 🚀 Key Features
+
+- **⚡ Lightning Fast**: Built on Next.js App Router for optimal performance and SEO.
+- **🔒 Secure Authentication**: Robust Google OAuth integration via Supabase Auth with Row Level Security (RLS) ensuring your data remains private.
+- **🔄 Real-time Sync**: Instant updates across all open tabs and devices using Supabase Realtime.
+- **📱 Fully Responsive**: A mobile-first design that looks great on desktops, tablets, and phones.
+- **🎨 Modern UI/UX**: Polished interface with optimistic UI updates, loading states, and smooth transitions.
+
+## 🔮 Roadmap
+
+- [ ] **Smart AI Categorization**: Automatically tag and sort bookmarks using LLMs.
+- [ ] **Browser Extension**: Save links directly from your toolbar.
+- [ ] **Search & Filtering**: Full-text search across titles and descriptions.
+- [ ] **Public Collections**: Share curated lists with the world.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 14](https://nextjs.org/) (App Router, Server Components)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Backend & Database**: [Supabase](https://supabase.com/) (PostgreSQL)
+- **Authentication**: Supabase Auth (Google OAuth)
+- **Validation**: [Zod](https://zod.dev/)
+
+---
 
 ## 📚 Documentation
 
 - **[Quick Start Guide](./QUICKSTART.md)** - Get running in 15 minutes
-- **[Deployment Guide](./DEPLOYMENT.md)** - Deploy to production
+- **[Deployment Guide](./DEPLOYMENT.md)** - detailed production deployment steps
 - **[Contributing Guide](./CONTRIBUTING.md)** - Development guidelines
-- **[Verification Checklist](./VERIFICATION.md)** - Testing guide
-- **[Project Summary](./PROJECT_SUMMARY.md)** - Technical overview
-- **[Documentation Index](./DOCUMENTATION_INDEX.md)** - Complete guide to all docs
 
-## Tech Stack
+---
 
-- **Next.js 14+** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Supabase** - Backend as a Service (Auth, Postgres, Realtime)
-- **Tailwind CSS** - Utility-first styling
-- **Zod** - Runtime validation
+## ⚡ Getting Started
 
-## Features
+### Prerequisites
 
-- Google OAuth authentication via Supabase
-- Private bookmark management with Row Level Security
-- Real-time updates across browser tabs
-- Server-side rendering for optimal performance
-- Protected routes with middleware
-- Form validation and error handling
-- Responsive, modern UI design
-- Optimistic UI updates
+- Node.js 18+
+- A [Supabase](https://supabase.com/) account
+- A [Google Cloud Console](https://console.cloud.google.com/) project (for OAuth)
 
-## Project Structure
-
-```
-app/
-├── auth/callback/      # OAuth callback handler
-├── dashboard/          # Main dashboard (protected)
-│   ├── AddBookmarkForm.tsx
-│   ├── BookmarkCard.tsx
-│   ├── BookmarkList.tsx
-│   ├── Header.tsx
-│   └── page.tsx
-├── login/              # Login page
-│   ├── LoginButton.tsx
-│   └── page.tsx
-├── layout.tsx
-└── page.tsx
-lib/
-├── supabaseClient.ts   # Browser client
-├── supabaseServer.ts   # Server client
-└── validations.ts      # Zod schemas
-types/
-├── database.types.ts   # Supabase types
-└── index.ts            # App types
-middleware.ts           # Route protection
-```
-
-## Prerequisites
-
-- Node.js 18+ and npm
-- Supabase account
-- Google Cloud Console account (for OAuth)
-
-## Setup Instructions
-
-### 1. Clone and Install
+### 1. Clone the repository
 
 ```bash
+git clone https://github.com/yourusername/linkledger.git
+cd linkledger
 npm install
 ```
 
-### 2. Supabase Configuration
+### 2. Configure Environment Variables
 
-#### Create a Supabase Project
+Create a `.env.local` file in the root directory:
 
-1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Wait for the database to be provisioned
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+```
 
-#### Create the Bookmarks Table
+### 3. Setup Supabase Database
 
-Run this SQL in the Supabase SQL Editor:
+Run the following SQL in your Supabase SQL Editor to create the necessary tables and policies:
 
 ```sql
 -- Create bookmarks table
@@ -92,253 +82,59 @@ CREATE TABLE bookmarks (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Enable Row Level Security
+-- Enable Row Level Security (RLS)
 ALTER TABLE bookmarks ENABLE ROW LEVEL SECURITY;
 
--- Policy: Users can view only their bookmarks
-CREATE POLICY "Users can view own bookmarks"
-  ON bookmarks FOR SELECT
-  USING (auth.uid() = user_id);
-
--- Policy: Users can insert only their bookmarks
-CREATE POLICY "Users can insert own bookmarks"
-  ON bookmarks FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
--- Policy: Users can delete only their bookmarks
-CREATE POLICY "Users can delete own bookmarks"
-  ON bookmarks FOR DELETE
-  USING (auth.uid() = user_id);
+-- Create Policies
+CREATE POLICY "Users can view own bookmarks" ON bookmarks FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own bookmarks" ON bookmarks FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own bookmarks" ON bookmarks FOR DELETE USING (auth.uid() = user_id);
 
 -- Enable Realtime
 ALTER PUBLICATION supabase_realtime ADD TABLE bookmarks;
 ```
 
-#### Enable Realtime
+### 4. Enable Google OAuth
 
-1. Go to Database → Replication in Supabase dashboard
-2. Enable replication for the `bookmarks` table
+1.  Go to **Authentication > Providers** in Supabase and enable **Google**.
+2.  Paste your **Client ID** and **Client Secret** from Google Cloud Console.
+3.  Add `http://localhost:3000/auth/callback` to your **Redirect URLs** in Supabase.
 
-### 3. Google OAuth Setup
-
-#### Configure Google Cloud Console
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project or select existing
-3. Navigate to "APIs & Services" → "Credentials"
-4. Click "Create Credentials" → "OAuth 2.0 Client ID"
-5. Configure OAuth consent screen if prompted
-6. Application type: "Web application"
-7. Add authorized redirect URIs:
-   ```
-   https://your-project-ref.supabase.co/auth/v1/callback
-   ```
-8. Copy the Client ID and Client Secret
-
-#### Configure Supabase Auth
-
-1. In Supabase dashboard, go to Authentication → Providers
-2. Enable Google provider
-3. Paste your Google Client ID and Client Secret
-4. Save changes
-
-### 4. Environment Variables
-
-Create a `.env.local` file in the root directory:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-Get these values from:
-- Supabase Dashboard → Project Settings → API
-
-**IMPORTANT**: Never commit `.env.local` to version control. Never use the `service_role` key in client-side code.
-
-### 5. Run Locally
+### 5. Run the server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Visit `http://localhost:3000` to see your app in action.
 
-## Deployment to Vercel
+---
 
-### 1. Push to GitHub
+## 🏗️ Project Structure
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin your-repo-url
-git push -u origin main
+app/
+├── auth/           # Authentication routes (callback handling)
+├── dashboard/      # Protected dashboard pages
+├── login/          # Public login page
+├── api/            # API routes (if any)
+└── layout.tsx      # Root layout and providers
+components/         # Reusable UI components
+lib/
+├── supabaseClient.ts # Client-side Supabase client
+└── supabaseServer.ts # Server-side Supabase client (cookies)
+types/              # TypeScript definitions
+middleware.ts       # Auth protection middleware
 ```
 
-### 2. Deploy on Vercel
+## 🔒 Security Architecture
 
-1. Go to [vercel.com](https://vercel.com)
-2. Import your GitHub repository
-3. Configure environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-4. Deploy
+LinkLedger uses a "Defense in Depth" strategy:
 
-### 3. Update Google OAuth
+1.  **Middleware Protection**: Unauthenticated users are redirected before they even reach protected pages.
+2.  **Row Level Security (RLS)**: Even if the API is accessed directly, the database rejects queries that don't match the user's ID.
+3.  **Server-Side Validation**: Zod schemas validate all inputs before they reach the database.
 
-Add your Vercel domain to Google Cloud Console authorized redirect URIs:
-```
-https://your-project-ref.supabase.co/auth/v1/callback
-```
+## 📄 License
 
-## Architecture
-
-### Authentication Flow
-
-1. User clicks "Continue with Google" on `/login`
-2. Supabase redirects to Google OAuth
-3. Google redirects back to `/auth/callback`
-4. Callback exchanges code for session
-5. User redirected to `/dashboard`
-
-### Route Protection
-
-Middleware checks authentication status:
-- Unauthenticated users → `/login`
-- Authenticated users trying to access `/login` → `/dashboard`
-- Session refresh handled automatically
-
-### Data Flow
-
-1. **Server Components**: Initial data fetch on page load
-2. **Client Components**: Handle user interactions
-3. **Realtime Subscriptions**: Sync changes across tabs
-4. **Optimistic Updates**: Immediate UI feedback
-
-### Security Model
-
-- **Row Level Security**: Database-level access control
-- **Server-Side Auth**: Session validation in middleware
-- **Client-Side Auth**: Supabase client with secure cookies
-- **Input Validation**: Zod schemas prevent invalid data
-- **HTTPS Only**: Enforced in production
-
-## Security Decisions
-
-### Why Row Level Security?
-
-RLS ensures users can only access their own data, even if client-side code is compromised. Policies are enforced at the database level.
-
-### Why Separate Supabase Clients?
-
-- **Server Client**: Uses cookies for SSR-safe authentication
-- **Browser Client**: Handles client-side operations and realtime
-
-### Why Middleware for Auth?
-
-Middleware runs before page rendering, enabling:
-- Fast redirects without page flash
-- Session refresh on every request
-- Centralized auth logic
-
-### Environment Variables
-
-- `NEXT_PUBLIC_*` variables are exposed to the browser
-- `ANON_KEY` is safe to expose (RLS protects data)
-- `SERVICE_ROLE_KEY` must NEVER be used client-side
-
-## Challenges & Solutions
-
-### Challenge 1: Realtime Duplicate Events
-
-**Problem**: Realtime subscriptions can fire multiple times for the same event.
-
-**Solution**: Check for existing IDs before adding to state:
-```typescript
-if (current.some((b) => b.id === newBookmark.id)) {
-  return current
-}
-```
-
-### Challenge 2: Memory Leaks
-
-**Problem**: Realtime subscriptions persist after component unmount.
-
-**Solution**: Cleanup in useEffect:
-```typescript
-return () => {
-  supabase.removeChannel(channel)
-}
-```
-
-### Challenge 3: Cookie Handling in Server Components
-
-**Problem**: Server Components can't set cookies directly.
-
-**Solution**: Use middleware to refresh sessions and handle cookie updates.
-
-### Challenge 4: Form Validation
-
-**Problem**: Need both client and server-side validation.
-
-**Solution**: Zod schemas provide type-safe validation reusable on both sides.
-
-### Challenge 5: Optimistic UI Updates
-
-**Problem**: Waiting for database confirmation creates lag.
-
-**Solution**: Update UI immediately, rollback on error:
-```typescript
-setBookmarks((current) => current.filter((b) => b.id !== id))
-```
-
-## Performance Optimizations
-
-- Server Components for initial render (faster FCP)
-- Minimal client-side JavaScript
-- Optimistic updates for instant feedback
-- Indexed database queries
-- Realtime subscriptions only for current user
-
-## Development Tips
-
-### Testing Realtime
-
-Open multiple browser tabs to see real-time sync in action.
-
-### Debugging Auth
-
-Check Supabase dashboard → Authentication → Users to verify user creation.
-
-### Database Queries
-
-Use Supabase dashboard → Table Editor to inspect data and test RLS policies.
-
-## Common Issues
-
-### "Invalid login credentials"
-
-- Verify Google OAuth is enabled in Supabase
-- Check redirect URIs match exactly
-- Ensure environment variables are set
-
-### Realtime not working
-
-- Verify replication is enabled for bookmarks table
-- Check browser console for subscription errors
-- Ensure RLS policies allow SELECT
-
-### Build fails on Vercel
-
-- Verify all environment variables are set
-- Check TypeScript errors with `npm run build`
-- Review Vercel build logs
-
-## License
-
-MIT
-
-## Support
-
-For issues or questions, please open a GitHub issue.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
