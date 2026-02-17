@@ -1,6 +1,5 @@
 # LinkLedger - Intelligent Bookmark Manager
 
-![LinkLedger Hero](https://via.placeholder.com/1200x600/0f172a/ffffff?text=LinkLedger+Dashboard)
 
 **LinkLedger** is a modern, production-ready bookmark manager designed to organize your digital life. Built with **Next.js 14**, **Supabase**, and **Tailwind CSS**, it features secure Google OAuth authentication, real-time synchronization across devices, and a beautiful, responsive interface.
 
@@ -134,6 +133,28 @@ LinkLedger uses a "Defense in Depth" strategy:
 1.  **Middleware Protection**: Unauthenticated users are redirected before they even reach protected pages.
 2.  **Row Level Security (RLS)**: Even if the API is accessed directly, the database rejects queries that don't match the user's ID.
 3.  **Server-Side Validation**: Zod schemas validate all inputs before they reach the database.
+
+## 🚧 Challenges & Solutions
+
+During the development of LinkLedger, we encountered several technical challenges. Here's how we solved them:
+
+### 1. Authentication State Management across Server & Client
+**Challenge:** Keeping the user's session synchronized between Server Components (for initial rendering and redirects) and Client Components (for interactivity) was tricky. Native cookies weren't always reflecting the latest state immediately.
+**Solution:**
+- We utilized `@supabase/ssr` to create separate clients for Server Components, Client Components, and Middleware.
+- Implemented a robust **Middleware** strategy that refreshes the session on every request, ensuring that expired tokens are rotated before they cause issues in the application.
+
+### 2. Real-time Updates & Duplication
+**Challenge:** Enabling real-time updates for bookmarks led to race conditions where the same bookmark would appear twice—once from the optimistic local update and again from the Supabase Realtime subscription.
+**Solution:**
+- Implemented strict **deduplication logic** in the state updater function.
+- Used **Optimistic UI** patterns to show changes instantly, while the Realtime subscription acts as a "source of truth" confirmation in the background.
+
+### 3. Row Level Security (RLS) Policies
+**Challenge:** Ensuring users could strictly only see their own data. Initially, queries would return empty arrays without errors, making debugging difficult.
+**Solution:**
+- Established comprehensive RLS policies on the PostgreSQL database.
+- This enforces security at the database engine level, meaning even if the API client is compromised, data access is restricted to the authenticated user.
 
 ## 📄 License
 
